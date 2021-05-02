@@ -12,6 +12,7 @@ GRAY = (128, 128, 128)
 RED = (255, 0, 0)
 ORANGE = (255, 215, 0)
 BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
 
 # node class
 SQUARE_WIDTH, SQUARE_HEIGHT = 20, 20
@@ -26,6 +27,9 @@ class Node:
     
     def close(self):
         self.color = RED
+        
+    def path(self):
+        self.color = GREEN
         
     def remove(self):
         self.color = GRAY
@@ -161,7 +165,14 @@ def main():
     # starting visualization
     run = True
     while run:
-        break
+        # events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+        
+        # drawing grid
+        draw_grid()
+        pygame.display.update()
         
     pygame.quit()
 
