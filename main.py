@@ -4,6 +4,7 @@ import pygame
 WIDTH, HEIGHT = 600, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pathfinder Visualizer")
+FPS = 60
 
 # colors
 BLACK = (0, 0, 0)
@@ -21,27 +22,18 @@ class Node:
         self.x,self.y = x, y
         self.color = GRAY
         self.neighbors = []
-        
-    def get_pos(self):
-        return self.x, self.y
+        self.distance = COLS * ROWS
+        self.past_nodes = []
     
-    def close(self):
-        self.color = RED
-        
-    def path(self):
-        self.color = GREEN
-        
-    def remove(self):
-        self.color = GRAY
-        
-    def make_start(self):
-        self.color = ORANGE
-        
-    def make_end(self):
-        self.color = BLUE
-        
-    def make_wall(self):
-        self.color = BLACK
+    def add_neighbors(self):
+        if self.x < COLS - 1 and not grid[self.x + 1][self.y].is_wall() and not grid[self.x + 1][self.y].is_closed():
+            self.neighbors.append(grid[self.x + 1][self.y])
+        if self.x > 0 and not grid[self.x - 1][self.y].is_wall() and not grid[self.x - 1][self.y].is_closed():
+            self.neighbors.append(grid[self.x - 1][self.y])
+        if self.y < ROWS - 1 and not grid[self.x][self.y + 1].is_wall() and not grid[self.x][self.y + 1].is_closed():
+            self.neighbors.append(grid[self.x][self.y + 1])
+        if self.y > 0 and not grid[self.x][self.y - 1].is_wall() and not grid[self.x][self.y - 1].is_closed():
+            self.neighbors.append(grid[self.x][self.y - 1])
     
     def is_closed(self):
         return self.color == RED
@@ -89,26 +81,26 @@ def grid_loc():
     return loc[0] // SQUARE_WIDTH, loc[1] // SQUARE_HEIGHT
 
 
-# right mouse click handle
-def right_mouse(which):
+# left mouse click handle
+def left_mouse(which):
     loc = grid_loc()
     node = grid[loc[0]][loc[1]]
     if which == 'start':
-        node.make_start()
+        node.color = ORANGE
         return loc
         
     elif which == 'end' and not node.is_start():
-        node.make_end()
+        node.color = BLUE
         return loc
         
     elif not node.is_start() and not node.is_end():
-        node.make_wall()
+        node.color = BLACK
         
     return None
     
     
-# left mouse click handle
-def left_mouse(start, end):
+# right mouse click handle
+def right_mouse(start, end):
     loc = grid_loc()
     node = grid[loc[0]][loc[1]]
     if node.is_start():
@@ -117,7 +109,7 @@ def left_mouse(start, end):
     elif node.is_end():
         end = None
         
-    node.remove()
+    node.color = GRAY
     return start, end
         
 
@@ -126,6 +118,7 @@ def main():
     run = True
     start, end = None, None
     begin_algo = False
+    clock = pygame.time.Clock()
     
     # setting up the grid
     while run:
@@ -137,23 +130,23 @@ def main():
             # left click
             if pygame.mouse.get_pressed()[0]:
                 if not start:
-                    start = right_mouse('start')
+                    start = left_mouse('start')
                 
                 elif not end:
-                    end = right_mouse('end')
+                    end = left_mouse('end')
                     
                 else:
-                    right_mouse('wall')
+                    left_mouse('wall')
                 
             # right click
             if pygame.mouse.get_pressed()[2]:
-                remove_return = left_mouse(start, end)
+                remove_return = right_mouse(start, end)
                 start = remove_return[0]
                 end = remove_return[1]
                 
             # key presses
             if event.type == pygame.KEYDOWN:
-                # space bar
+                # space bar to start visualization
                 if event.key == pygame.K_SPACE:
                     run = False
         
@@ -161,19 +154,68 @@ def main():
         draw_grid()
         pygame.display.update()
     
+    # checking if there is start and end
+    if not start or not end:
+        pygame.quit()
     
     # starting visualization
     run = True
+    curr = start
+    curr_node = grid[curr[0]][curr[1]]
+    curr_node.distance = 0
     while run:
         # events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
         
+        # looping through neighbors
+        curr_node = grid[curr[0]][curr[1]]
+        curr_node.add_neighbors()
+        for neighbor in curr_node.neighbors:
+            # checking if distance is less going through current node
+            if curr_node.distance + 1 < neighbor.distance:
+                neighbor.distance = curr_node.distance + 1
+                neighbor.past_nodes += curr_node.past_nodes
+                neighbor.past_nodes.append(curr_node)
+        
+        # changing current node to closed
+        if not curr_node.is_start():
+            curr_node.color = RED
+        
+        # finding smallest node
+        smallest_dist = ROWS * COLS
+        smallest_node = None
+        for row in grid:
+            for node in row:
+                if not node.is_closed() and not node.is_start() and node.distance < smallest_dist:
+                    smallest_node = node
+                    smallest_dist = node.distance
+                    
+        # switching node
+        if smallest_dist == ROWS * COLS:
+            break
+        curr_node = smallest_node
+        
+        # if current node is the end node
+        if curr_node.is_end():
+            for node in curr_node.past_nodes:
+                node.color = GREEN
+                draw_grid()
+                pygame.display.update()
+                clock.tick(FPS)
+                    
+            pygame.time.delay(5000)
+            pygame.quit()
+        
+        curr_node.color = GREEN
+        curr = (curr_node.x, curr_node.y)
+        
         # drawing grid
         draw_grid()
         pygame.display.update()
+        clock.tick(FPS)
         
-    pygame.quit()
+    main()
 
 main()
