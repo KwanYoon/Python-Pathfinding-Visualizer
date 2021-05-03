@@ -194,7 +194,7 @@ def main():
                     
         # if there is no path
         if smallest_dist == ROWS * COLS:
-            pygame.time.delay(3000)
+            pygame.time.delay(4000)
             main()
             
         # switching node
@@ -208,7 +208,7 @@ def main():
                 pygame.display.update()
                 clock.tick(FPS)
                     
-            pygame.time.delay(3000)
+            pygame.time.delay(4000)
             main()
         
         curr_node.color = GREEN
