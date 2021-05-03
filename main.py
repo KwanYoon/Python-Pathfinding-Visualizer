@@ -4,7 +4,7 @@ import pygame
 WIDTH, HEIGHT = 600, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pathfinder Visualizer")
-FPS = 60
+FPS = 120
 
 # colors
 BLACK = (0, 0, 0)
@@ -54,11 +54,6 @@ class Node:
 COLS = 30
 ROWS = 30
 grid = []
-for i in range(ROWS):
-    grid.append([])
-    for j in range(COLS):
-        grid[i].append(Node(i, j))
-
 
 # drawing grid
 def draw_grid():
@@ -119,6 +114,11 @@ def main():
     start, end = None, None
     begin_algo = False
     clock = pygame.time.Clock()
+    grid.clear()
+    for i in range(ROWS):
+        grid.append([])
+        for j in range(COLS):
+            grid[i].append(Node(i, j))
     
     # setting up the grid
     while run:
@@ -192,9 +192,12 @@ def main():
                     smallest_node = node
                     smallest_dist = node.distance
                     
-        # switching node
+        # if there is no path
         if smallest_dist == ROWS * COLS:
-            break
+            pygame.time.delay(3000)
+            main()
+            
+        # switching node
         curr_node = smallest_node
         
         # if current node is the end node
@@ -205,8 +208,8 @@ def main():
                 pygame.display.update()
                 clock.tick(FPS)
                     
-            pygame.time.delay(5000)
-            pygame.quit()
+            pygame.time.delay(3000)
+            main()
         
         curr_node.color = GREEN
         curr = (curr_node.x, curr_node.y)
@@ -216,6 +219,6 @@ def main():
         pygame.display.update()
         clock.tick(FPS)
         
-    main()
+    pygame.quit()
 
 main()
