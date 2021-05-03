@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # display
 WIDTH, HEIGHT = 800, 800
@@ -13,16 +14,19 @@ RED = (255, 0, 0)
 ORANGE = (255, 215, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+YELLOW = (255,255,0)
 
 # node class
 SQUARE_WIDTH, SQUARE_HEIGHT = 20, 20
 class Node:
     def __init__(self, x, y):
-        self.x,self.y = x, y
+        self.x, self.y = x, y
         self.color = GRAY
         self.neighbors = []
         self.distance = COLS * ROWS
         self.past_nodes = []
+        self.f, self.g, self.h = 99999999999999, 99999999999999, 99999999999999
+        self.prev = None
     
     def add_neighbors(self):
         if self.x < COLS - 1 and not grid[self.x + 1][self.y].is_wall() and not grid[self.x + 1][self.y].is_closed():
@@ -33,6 +37,11 @@ class Node:
             self.neighbors.append(grid[self.x][self.y + 1])
         if self.y > 0 and not grid[self.x][self.y - 1].is_wall() and not grid[self.x][self.y - 1].is_closed():
             self.neighbors.append(grid[self.x][self.y - 1])
+    
+    def getFGH(self, g, end):
+        self.g = g
+        self.h = math.sqrt((end[0] - self.x)**2 + (end[1] - self.y)**2)
+        self.f = self.g + self.h
     
     def is_closed(self):
         return self.color == RED
@@ -148,12 +157,103 @@ def grid_draw():
         
     return start, end
 
+
+# A* function
+def a_star(speed):
+    # variables
+    if speed:
+        FPS = speed
+    else:
+        FPS = 500
+    clock = pygame.time.Clock()
+    grid.clear()
+    for i in range(ROWS):
+        grid.append([])
+        for j in range(COLS):
+            grid[i].append(Node(i, j))
+            
+    # drawing grid
+    start_end = grid_draw()
+    start = start_end[0]
+    end = start_end[1]
+
+    # checking if there is start and end
+    if not start or not end:
+        return
+    
+    # starting visualization
+    run = True
+    curr = start
+    curr_node = grid[curr[0]][curr[1]]
+    curr_node.f, curr_node.g, curr_node.h = 0, 0, 0
+    open_list = [curr_node]
+    closed_list = []
+    while run:
+        # events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+        
+        # searching for lowest F cost node in open_list
+        smallest_node = open_list[0]
+        for i in range(len(open_list)):
+            if open_list[i].f < smallest_node.f:
+                smallest_node = open_list[i]
+        
+        # change smallest node to closed_list and change current node to smallest node
+        closed_list.append(smallest_node)
+        open_list.remove(smallest_node)
+        curr = (smallest_node.x, smallest_node.y)
+        smallest_node.color = RED
+        curr_node = smallest_node
+        
+        # drwaing grid again
+        grid[start[0]][start[1]].color = ORANGE
+        grid[end[0]][end[1]].color = BLUE
+        draw_grid()
+        pygame.display.update()
+        clock.tick(FPS)
+        
+        # iterating through neighbors of current node
+        curr_node.add_neighbors()
+        for neighbor in curr_node.neighbors:
+            if not neighbor in closed_list:
+                if not neighbor in open_list:
+                    open_list.append(neighbor)
+                    neighbor.color = YELLOW
+                    neighbor.getFGH(curr_node.g + 1, end)
+                    neighbor.prev = curr_node
+                elif neighbor.g > curr_node.g + 1:
+                    neighbor.g = curr_node.g + 1
+                    neighbor.f = neighbor.g + neighbor.h
+                    neighbor.prev = curr_node
+                    
+        # algorithm finish conditions
+        if len(open_list) == 0:
+            break
+        elif grid[end[0]][end[1]] in closed_list:
+            # change all items in open_list to red
+            for i in range(len(open_list)):
+                open_list[i].color = RED
+                
+            # color path back green
+            start_node = grid[start[0]][start[1]]
+            curr_node = grid[end[0]][end[1]]
+            while curr_node.prev != start_node:
+                curr_node.prev.color = GREEN
+                curr_node = curr_node.prev
+                draw_grid()
+                pygame.display.update()
+                clock.tick(FPS)
+            break
+                    
+        
 # dijkstra function
 def dijkstra(speed):
     # variables
     if speed:
         FPS = speed
-    else :
+    else:
         FPS = 500
     clock = pygame.time.Clock()
     grid.clear()

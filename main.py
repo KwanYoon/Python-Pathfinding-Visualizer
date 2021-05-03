@@ -1,5 +1,5 @@
 import tkinter as tk
-import dijkstra
+import algorithms
 
 # Constants
 SCREEN_HEIGHT = 600
@@ -8,9 +8,9 @@ SCREEN_WIDTH = 600
 # functions
 def run_algorithm():
     if (algorithm.get() == 0):
-        dijkstra.dijkstra(speed.get())
+        algorithms.dijkstra(speed.get())
     elif (algorithm.get() == 1):
-        return
+        algorithms.a_star(speed.get())
 
 # screen
 screen = tk.Tk()
