@@ -4,13 +4,29 @@ import algorithms
 # Constants
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 600
+POPUP_HEIGHT = 200
+POPUP_WIDTH = 600
 
 # functions
 def run_algorithm():
+    # running algorithm accordingly
+    counter = 0
     if (algorithm.get() == 0):
-        algorithms.dijkstra(speed.get())
+        counter = algorithms.dijkstra(speed.get())
     elif (algorithm.get() == 1):
-        algorithms.a_star(speed.get())
+        counter = algorithms.a_star(speed.get())
+        
+    # popup screen after algorithm finishes
+    popup = tk.Tk()
+    popup.title('Alert')
+    canvas = tk.Canvas(popup, height=POPUP_HEIGHT, width=POPUP_WIDTH)
+    canvas.pack()
+    popup_text = tk.Text(popup, height=1, width=40, font=40)
+    popup_text.place(anchor=tk.CENTER, relx=0.5, rely=0.5)
+    if counter == -1:
+        popup_text.insert(tk.END, "There is no path")
+    else:
+        popup_text.insert(tk.END, "It takes " + str(counter) + " blocks to reach destination")
 
 # screen
 screen = tk.Tk()

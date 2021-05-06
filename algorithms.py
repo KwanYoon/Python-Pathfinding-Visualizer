@@ -166,6 +166,7 @@ def a_star(speed):
     else:
         FPS = 500
     clock = pygame.time.Clock()
+    counter = -1
     grid.clear()
     for i in range(ROWS):
         grid.append([])
@@ -230,13 +231,14 @@ def a_star(speed):
                     
         # algorithm finish conditions
         if len(open_list) == 0:
-            break
+            return counter
         elif grid[end[0]][end[1]] in closed_list:
             # change all items in open_list to red
             for i in range(len(open_list)):
                 open_list[i].color = RED
                 
             # color path back green
+            counter = 1
             start_node = grid[start[0]][start[1]]
             curr_node = grid[end[0]][end[1]]
             while curr_node.prev != start_node:
@@ -245,7 +247,10 @@ def a_star(speed):
                 draw_grid()
                 pygame.display.update()
                 clock.tick(FPS)
+                counter += 1
             break
+        
+    return counter
                     
         
 # dijkstra function
@@ -320,7 +325,7 @@ def dijkstra(speed):
                 draw_grid()
                 pygame.display.update()
                 clock.tick(FPS)
-            break
+            return len(curr_node.past_nodes)
         
         curr_node.color = GREEN
         curr = (curr_node.x, curr_node.y)
@@ -329,3 +334,5 @@ def dijkstra(speed):
         draw_grid()
         pygame.display.update()
         clock.tick(FPS)
+        
+    return -1
