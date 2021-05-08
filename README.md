@@ -7,5 +7,4 @@ This is a Pathfinding Visualizer created with **Python and** its **PyGame** libr
 
 ***Create your own maze***
 
-![Create-maze](https://user-images.githubusercontent.com/47330978/117524353-038fc200-af8b-11eb-854f-71b5aaffe287.mp4)
-
+![72cdebeea11c2434a2b8709c71ee2e9f](https://user-images.githubusercontent.com/47330978/117524511-a5171380-af8b-11eb-9173-d0e9e13f41cf.gif)
